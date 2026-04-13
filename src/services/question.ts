@@ -5,6 +5,8 @@ export type Question = {
   options: { key: string; text: string }[];
   answer: string;
   rawOption?: Record<string, string | null>; 
-   instructionIndex?: number;
+   instruction?: string | null;
+  passage?: string | null;
+   explanation?: string | null;
 };
 

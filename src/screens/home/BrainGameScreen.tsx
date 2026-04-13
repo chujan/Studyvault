@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { Block, Text } from '@components';
 import { palette, family } from '@theme';
-import { ChessPieces, DustBin, Numeric } from '@images/home';
+import { ChessPieces, DustBin, Numeric } from '@assets/images';
 import { styles as homeStyles } from './styles';
 import { useNavigation } from '@react-navigation/native';
 import { SvgIcon } from '../../components/svg-icon';

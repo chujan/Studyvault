@@ -32,6 +32,7 @@ type RootStackParamList = {
   PerformanceScreen: PerformanceResult;
 };
 type PerformanceResult = {
+  examType: 'NECO'
   totalQuestions: number;
   correctCount: number;
   percentage: number;
@@ -45,6 +46,8 @@ type SubjectAnswers = Record<string, (string | null)[]>;
 
 /* ================= SCREEN ================= */
 export default function NecoPracticeScreen() {
+  const EXAM_TYPE: 'NECO' = 'NECO';
+
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'NecoPracticeScreen'>>();
@@ -178,7 +181,7 @@ export default function NecoPracticeScreen() {
     const totalTimeInSeconds = initialDurationInSeconds ?? 0;
     const timeSpentInSeconds = initialDurationInSeconds && timeLeft !== null ? totalTimeInSeconds - timeLeft : 0;
 
-    return { totalQuestions, correctCount, percentage, timeSpentInSeconds, totalTimeInSeconds, subjectBreakdown, startTime, endTime: Date.now(), questionReviews };
+    return { examType: EXAM_TYPE,totalQuestions, correctCount, percentage, timeSpentInSeconds, totalTimeInSeconds, subjectBreakdown, startTime, endTime: Date.now(), questionReviews };
   };
 
   /* ===== CALCULATOR HANDLER ===== */

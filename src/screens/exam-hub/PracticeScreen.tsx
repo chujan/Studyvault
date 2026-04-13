@@ -32,6 +32,7 @@ type RootStackParamList = {
   PerformanceScreen: PerformanceResult;
 };
 type PerformanceResult = {
+  examType: 'JAMB';
   totalQuestions: number;
   correctCount: number;
   percentage: number;
@@ -45,6 +46,8 @@ type SubjectAnswers = Record<string, (string | null)[]>;
 
 /* ================= SCREEN ================= */
 export default function PracticeScreen() {
+  const EXAM_TYPE: 'JAMB' = 'JAMB';
+
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'PracticeScreen'>>();
@@ -178,7 +181,7 @@ export default function PracticeScreen() {
     const totalTimeInSeconds = initialDurationInSeconds ?? 0;
     const timeSpentInSeconds = initialDurationInSeconds && timeLeft !== null ? totalTimeInSeconds - timeLeft : 0;
 
-    return { totalQuestions, correctCount, percentage, timeSpentInSeconds, totalTimeInSeconds, subjectBreakdown, startTime, endTime: Date.now(), questionReviews };
+    return { examType: EXAM_TYPE, totalQuestions, correctCount, percentage, timeSpentInSeconds, totalTimeInSeconds, subjectBreakdown, startTime, endTime: Date.now(), questionReviews };
   };
 
   /* ===== CALCULATOR HANDLER ===== */

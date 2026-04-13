@@ -1,0 +1,188 @@
+{
+  "novels": [
+    {
+      "id": "1",
+      "title": "Lekki Headmaster",
+      "author": "Kabir Alabi Garba",
+      "genre": "Satire / Fiction",
+      "subject": "ENG",
+      "exam_focus": ["JAMB"],
+      "comprehensive_summary": "Lekki Headmaster is a satirical novel that explores corruption, moral compromise, and social pressure within Nigeria’s private education sector. Set in the affluent community of Lekki, the story follows a school headmaster who is determined to maintain the reputation of his institution while navigating intense pressure from wealthy parents, competitive rival schools, and financial expectations. As the demand for high academic results and social prestige increases, the headmaster finds himself tempted to compromise ethical standards in order to satisfy influential stakeholders. The novel humorously but critically exposes how the pursuit of wealth, status, and appearances can erode integrity within educational institutions. Through conflicts among staff, manipulation by parents, and the headmaster’s internal moral struggles, the story highlights the consequences of prioritizing money and public image over genuine learning and character development.",
+      "chapters": [
+        {
+          "chapter": 1,
+          "title": "A Prestigious Beginning",
+          "summary": "The novel opens with a detailed description of the school located in Lekki, an area known for affluence and high social status. The headmaster is introduced as an ambitious administrator who takes pride in the school’s reputation. Parents are portrayed as wealthy and demanding, expecting excellence not only in academics but also in appearance and social standing. The chapter establishes the competitive atmosphere of private education and introduces early hints of the tension between maintaining standards and satisfying powerful clients."
+        },
+        {
+          "chapter": 2,
+          "title": "Parental Influence and Expectations",
+          "summary": "Pressure begins to mount as influential parents demand special treatment for their children. Some request grade adjustments, preferential seating, or exemptions from discipline. The headmaster struggles to balance fairness with the fear of losing financial support from these parents. Staff members begin to notice favoritism, and subtle cracks in the institution’s integrity start to appear."
+        },
+        {
+          "chapter": 3,
+          "title": "Temptation and Compromise",
+          "summary": "Financial challenges threaten the stability of the school, including unpaid fees and rising operational costs. The headmaster is presented with opportunities to inflate expenses and manipulate records for personal and institutional gain. Although initially hesitant, he gradually rationalizes small compromises as necessary for survival. This chapter focuses on his internal conflict between ethical leadership and financial security."
+        },
+        {
+          "chapter": 4,
+          "title": "Staff Discontent",
+          "summary": "Teachers begin expressing concern about declining academic standards and administrative bias. Some feel demoralized by the headmaster’s decisions, especially when discipline is unevenly enforced. Meetings grow tense, and trust between management and staff weakens. The chapter explores how corruption at the top affects the morale and effectiveness of the entire institution."
+        },
+        {
+          "chapter": 5,
+          "title": "Reputation at Risk",
+          "summary": "Rumors about unethical practices begin to circulate among parents and competitors. A minor scandal threatens the school’s public image. The headmaster attempts damage control through public relations efforts, but the pressure intensifies. He is forced to confront the reality that his earlier compromises have long-term consequences."
+        },
+        {
+          "chapter": 6,
+          "title": "Moment of Reckoning",
+          "summary": "Facing mounting criticism and potential exposure, the headmaster reflects on his leadership choices. He recognizes how far he has drifted from his original ideals. The consequences of greed and image-driven management become undeniable as enrollment declines and trust erodes."
+        },
+        {
+          "chapter": 7,
+          "title": "Lessons in Leadership",
+          "summary": "The novel concludes with a moral reflection on accountability, integrity, and the true purpose of education. Whether through reform or downfall, the headmaster’s journey serves as a cautionary tale about leadership in a society obsessed with wealth and prestige."
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Sweet Sixteen",
+      "author": "Bolaji Abdullahi",
+      "genre": "Coming-of-age / Educational Fiction",
+      "subject": "ENG",
+      "exam_focus": ["JAMB"],
+      "comprehensive_summary": "Sweet Sixteen is a coming-of-age novel written as a heartfelt conversation between a father and his daughter, Aliya, as she turns sixteen. Through reflective advice and storytelling, the father addresses adolescence, identity, relationships, education, peer pressure, and self-worth. He emphasizes the importance of confidence, discipline, and long-term thinking in a world filled with distractions and unrealistic expectations. The novel encourages young readers to value themselves beyond physical appearance and to make informed decisions about relationships and academic priorities. With warmth and wisdom, the father guides Aliya toward maturity, self-respect, and responsible adulthood.",
+      "past_questions": {
+    "exam_type": "JAMB",
+    "total_questions": 5,
+    "questions": [
+      {
+        "id": 1,
+        "question": "The novel Sweet Sixteen is written in the form of",
+        "options": {
+          "A": "a diary",
+          "B": "a letter",
+          "C": "a speech",
+          "D": "a report"
+        },
+        "answer": "B",
+        "explanation": "The novel is structured as a long advisory letter from a father to his daughter."
+      },
+      {
+        "id": 2,
+        "question": "Aliya’s sixteenth birthday symbolizes",
+        "options": {
+          "A": "marriage readiness",
+          "B": "transition to maturity",
+          "C": "academic excellence",
+          "D": "rebellion"
+        },
+        "answer": "B",
+        "explanation": "Sixteen marks her transition from childhood into responsible adolescence."
+      },
+      {
+        "id": 3,
+        "question": "The central theme of the novel is",
+        "options": {
+          "A": "corruption",
+          "B": "coming of age",
+          "C": "war",
+          "D": "revenge"
+        },
+        "answer": "B",
+        "explanation": "The story focuses on growing up and making responsible life decisions."
+      },
+      {
+        "id": 4,
+        "question": "Aliya’s father advises her to build relationships based on",
+        "options": {
+          "A": "physical attraction",
+          "B": "material gain",
+          "C": "mutual respect",
+          "D": "social popularity"
+        },
+        "answer": "C",
+        "explanation": "The father emphasizes respect and emotional intelligence."
+      },
+      {
+        "id": 5,
+        "question": "The tone of Sweet Sixteen is largely",
+        "options": {
+          "A": "satirical",
+          "B": "tragic",
+          "C": "didactic",
+          "D": "comic"
+        },
+        "answer": "C",
+        "explanation": "The novel is instructional and advisory in tone."
+      }
+    ]
+  },
+      "chapters": [
+        {
+          "chapter": 1,
+          "title": "A Milestone Birthday",
+          "summary": "Aliya celebrates her sixteenth birthday, and her father reflects on her growth from childhood into adolescence. He introduces the idea that sixteen marks the beginning of greater responsibility and independence. The tone is affectionate but serious, signaling that the conversations ahead will shape her transition into adulthood."
+        },
+        {
+          "chapter": 2,
+          "title": "Understanding Identity",
+          "summary": "The father discusses self-image and the importance of building confidence based on character rather than appearance. He explains that society often places unrealistic expectations on young girls. Aliya is encouraged to define herself by her values, ambitions, and intellect."
+        },
+        {
+          "chapter": 3,
+          "title": "Boys and Emotional Intelligence",
+          "summary": "In a candid but respectful manner, the father talks about relationships and emotional maturity. He explains differences in how teenage boys and girls often approach relationships. He advises patience, caution, and self-respect, stressing that true affection must be rooted in mutual respect."
+        },
+        {
+          "chapter": 4,
+          "title": "Education and Future Goals",
+          "summary": "Academic focus is presented as the foundation for independence and success. The father emphasizes discipline, time management, and ambition. He reminds Aliya that temporary distractions should not derail long-term goals."
+        },
+        {
+          "chapter": 5,
+          "title": "Peer Pressure and Choices",
+          "summary": "Aliya is warned about the influence of friends and social circles. The father shares examples of how poor decisions can have lasting consequences. She is encouraged to think critically and stand firm in her values."
+        },
+        {
+          "chapter": 6,
+          "title": "Reputation and Responsibility",
+          "summary": "The discussion turns to social behavior, digital presence, and personal reputation. The father explains that actions taken in youth can shape future opportunities. Responsibility and discretion are emphasized."
+        },
+        {
+          "chapter": 7,
+          "title": "Stepping into Adulthood",
+          "summary": "The novel concludes with reassurance and encouragement. The father expresses confidence in Aliya’s judgment and maturity. The final message centers on self-belief, resilience, and making thoughtful life decisions."
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "The Lion and the Jewel",
+      "author": "Wole Soyinka",
+      "genre": "Drama",
+      "subject": "LIT",
+      "exam_focus": ["WAEC", "NECO"],
+      "comprehensive_summary": "The Lion and the Jewel is a dramatic play set in the Yoruba village of Ilujinle. The story revolves around the rivalry between Lakunle, a Western-educated teacher who rejects traditional customs, and Baroka, the cunning village chief who represents tradition. Both men desire Sidi, the beautiful village girl whose pride increases after her image appears in a foreign magazine. Lakunle refuses to pay the traditional bride price, believing it to be outdated, while Baroka uses wisdom and strategy to win Sidi’s admiration. Through humor, symbolism, and dialogue, the play explores the tension between tradition and modernity, pride, gender dynamics, and cultural identity.",
+      "chapters": [
+        {
+          "chapter": 1,
+          "title": "Morning: The Proposal",
+          "summary": "The play begins with Lakunle attempting to persuade Sidi to marry him without paying her bride price. He criticizes traditional customs and presents himself as modern and enlightened. Sidi rejects his proposal, insisting on cultural norms. The arrival of a magazine featuring Sidi elevates her pride and changes her social standing within the village."
+        },
+        {
+          "chapter": 2,
+          "title": "Noon: Baroka’s Strategy",
+          "summary": "Baroka learns of Sidi’s newfound fame and becomes determined to marry her. Through Sadiku, his senior wife, he spreads a rumor of his own weakness to lure Sidi into visiting him. Confident and curious, Sidi confronts Baroka but is gradually outwitted by his intelligence and charm."
+        },
+        {
+          "chapter": 3,
+          "title": "Night: Triumph of Tradition",
+          "summary": "Sidi discovers that Baroka has successfully manipulated her pride and emotions. Lakunle is devastated when he realizes Sidi has chosen Baroka. In the end, Sidi accepts marriage to Baroka, symbolizing the endurance of tradition over superficial modern ideas."
+        }
+      ]
+    }
+  ]
+}

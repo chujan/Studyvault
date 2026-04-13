@@ -10,6 +10,9 @@ import { RS } from '@helpers';
 import { palette, family } from '@components/theme';
 import { fetchUtmeSection } from '../../services/utmeApi';
 import { UtmeSection } from '../../services/types';
+import firestore from '@react-native-firebase/firestore';
+import { db, firebaseAuth } from '../../config/firebase';
+
 
 import { Question } from '../../services/question';
 import { getCache, setCache } from '../../storage/index';
@@ -17,15 +20,18 @@ import { getCache, setCache } from '../../storage/index';
 /* ================= TYPES ================= */
 type PracticeMode = 'jamb' | 'timed' | 'unlimited';
 type QuestionReview = {
+  id: string;                 
   subject: string;
   question: string;
   selected: string | null;
   correctAnswer: string;
+  explanation?: string | null; 
   options: { label: string; text: string }[];
 };
+
 type RootStackParamList = {
   UtmePracticeScreen: {
-    subject: string;   // single subject
+    subject: string;   
     institution: string;
     faculty: string;
     year: string;
@@ -36,6 +42,7 @@ type RootStackParamList = {
 };
 
 type PerformanceResult = {
+  examType: 'UTME';
   totalQuestions: number;
   correctCount: number;
   percentage: number;
@@ -49,21 +56,32 @@ type SubjectAnswers = Record<string, (string | null)[]>;
 
 /* ================= SCREEN ================= */
 export default function UtmePracticeScreen() {
+  const EXAM_TYPE: 'UTME' = 'UTME';
+
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'UtmePracticeScreen'>>();
   const routeParams = route.params ?? {};
   const subject = routeParams.subject;
 
-  const practiceMode: PracticeMode = routeParams.practiceMode ?? 'jamb';
-  const duration = routeParams.duration;
+  const practiceMode: PracticeMode = routeParams.practiceMode ?? 'timed';
+  
+  const duration =
+  practiceMode === 'timed' && routeParams.duration
+    ? routeParams.duration
+    : 0;
+
+// const initialDurationInSeconds =
+//   practiceMode === 'unlimited' ? null : duration * 60;
 
   /* ===== TOP-LEVEL HOOKS ===== */
   const [startTime] = useState<number>(() => Date.now());
   const [currentSubject, setCurrentSubject] = useState<string>(subject);
 
   const [allQuestions, setAllQuestions] = useState<SubjectQuestions>({});
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentYear, setCurrentYear] = useState<string>(routeParams.year);
+  const questions = allQuestions[`${currentSubject}_${currentYear}`] ?? [];
+
   const [selectedOptions, setSelectedOptions] = useState<SubjectAnswers>({});
   const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -79,50 +97,65 @@ export default function UtmePracticeScreen() {
 const [passage, setPassage] = useState<string | null>(null);
 
 
+const key = `${currentSubject}_${currentYear}`;
+const subjQuestions = allQuestions[key] ?? [];
+const subjAnswers = selectedOptions[key] ?? [];
+
+
+
 
   /* ===== FETCH / LOAD QUESTIONS ===== */
-const loadQuestions = async (subject: string) => {
+const loadQuestions = async (institution: string, subject: string, year: string) => {
   setLoading(true);
+
+  setAllQuestions(prev => ({
+    ...prev,
+    [`${subject}_${year}`]: [],
+  }));
+
   try {
-    const cached = await getCache<any>(`questions_${subject}`);
+    const response = await fetchUtmeSection(institution, subject, year);
+    setInstructions(response.instruction ? [response.instruction] : []);
+    setPassage(response.passage ?? null);
 
-    let data: Question[] = [];
-    let instrs: string[] = [];
-    let pass: string | null = null;
+    // Map API questions to internal Question type
+    const formattedQuestions: Question[] = response.questions.map(q => ({
+      ...q,
+      id: Number(q.id),             // ensure 'id' is number
+      explanation: q.explanation ?? null, // optional explanation
+    }));
 
-    if (cached) {
-      data = cached.questions;
-      instrs = cached.instructions ?? [];
-      pass = cached.passage ?? null;
-    } else {
-      const response = await fetchUtmeSection(subject);
-      data = response.questions;
-      instrs = response.instructions;
-      pass = response.passage ?? null;
+    setAllQuestions(prev => ({
+      ...prev,
+      [`${subject}_${year}`]: formattedQuestions,
+    }));
 
-      await setCache(`questions_${subject}`, response);
-    }
-
-    setInstructions(instrs);
-    setPassage(pass);
-    setAllQuestions(prev => ({ ...prev, [subject]: data }));
-    setQuestions(data);
-    setCurrentQuestionIndex(0);
     setSelectedOptions(prev => ({
       ...prev,
-      [subject]: prev[subject] ?? Array(data.length).fill(null),
+      [`${subject}_${year}`]: Array(formattedQuestions.length).fill(null),
     }));
+
+    setCurrentQuestionIndex(0);
   } catch (e) {
-    console.error(e);
+    console.error('Failed to load UTME questions:', e);
   } finally {
     setLoading(false);
   }
 };
 
 
+
+
+
+
+
   useEffect(() => {
-    if (currentSubject) loadQuestions(currentSubject);
-  }, [currentSubject]);
+  if (currentSubject && currentYear && routeParams.institution) {
+    const formattedSubject = currentSubject; // Or map if needed
+    loadQuestions(routeParams.institution, formattedSubject, currentYear);
+  }
+}, [currentSubject, currentYear, routeParams.institution]);
+
 
   /* ===== TIMER ===== */
   useEffect(() => {
@@ -138,14 +171,23 @@ const loadQuestions = async (subject: string) => {
     return () => clearInterval(interval);
   }, [timeLeft, practiceMode]);
 
+//   useEffect(() => {
+//   if (route.params?.year) {
+//     setCurrentYear(route.params.year);
+//   }
+// }, [route.params?.year]);
+
+
   /* ===== HELPERS ===== */
-  const selectOption = (key: string) => {
-    setSelectedOptions(prev => {
-      const updated = prev[currentSubject] ? [...prev[currentSubject]] : Array(questions.length).fill(null);
-      updated[currentQuestionIndex] = key;
-      return { ...prev, [currentSubject]: updated };
-    });
-  };
+  const selectOption = (optionKey: string) => {
+  const key = `${currentSubject}_${currentYear}`;
+  setSelectedOptions(prev => {
+    const updated = prev[key] ? [...prev[key]] : Array(questions.length).fill(null);
+    updated[currentQuestionIndex] = optionKey;
+    return { ...prev, [key]: updated };
+  });
+};
+
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -158,44 +200,86 @@ const loadQuestions = async (subject: string) => {
   const goNext = () => setCurrentQuestionIndex(i => Math.min(i + 1, questions.length - 1));
   const currentQuestion = questions[currentQuestionIndex];
 
-const currentInstruction =
-  instructions[currentQuestion?.instructionIndex ?? -1] ?? null;
+const currentInstruction = currentQuestion?.instruction ?? null;
 
-const currentPassage = passage;
+
+const currentPassage = currentQuestion?.passage ?? null;
+
+
 
 
   /* ===== CALCULATE RESULTS ===== */
   const calculateResults = (): PerformanceResult & { startTime: number; endTime: number } => {
-    let totalQuestions = 0;
-    let correctCount = 0;
-    const subjectBreakdown: PerformanceResult['subjectBreakdown'] = {};
-    const questionReviews: QuestionReview[] = [];
+  let totalQuestions = 0;
+  let correctCount = 0;
 
-    const subjQuestions = allQuestions[currentSubject] ?? [];
-    const subjAnswers = selectedOptions[currentSubject] ?? [];
-    totalQuestions += subjQuestions.length;
-    let attempted = 0;
-    let correct = 0;
+  const subjectBreakdown: PerformanceResult['subjectBreakdown'] = {};
+  const questionReviews: QuestionReview[] = [];
 
-    subjQuestions.forEach((q, i) => {
-      const selected = subjAnswers[i] ?? null;
-      const answer = q.answer?.toString().trim();
-      if (selected !== null) attempted += 1;
-      if (selected && selected === answer) correct += 1;
+  const key = `${currentSubject}_${currentYear}`;
+  const subjQuestions = allQuestions[key] ?? [];
+  const subjAnswers = selectedOptions[key] ?? [];
 
-      const options = q.options?.map(opt => ({ label: opt.key, text: opt.text })) ?? [];
-      questionReviews.push({ subject: currentSubject, question: q.text, selected, correctAnswer: answer ?? '', options });
-    });
+  totalQuestions = subjQuestions.length;
 
-    correctCount += correct;
-    subjectBreakdown[currentSubject] = { total: subjQuestions.length, attempted, correct };
+  let attempted = 0;
+  let correct = 0;
 
-    const percentage = totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
-    const totalTimeInSeconds = initialDurationInSeconds ?? 0;
-    const timeSpentInSeconds = initialDurationInSeconds && timeLeft !== null ? totalTimeInSeconds - timeLeft : 0;
+  subjQuestions.forEach((q, i) => {
+    const selected = subjAnswers[i] ?? null;
+    const answer = q.answer?.toString().trim();
 
-    return { totalQuestions, correctCount, percentage, timeSpentInSeconds, totalTimeInSeconds, subjectBreakdown, startTime, endTime: Date.now(), questionReviews };
+    if (selected !== null) attempted += 1;
+    if (selected && selected === answer) correct += 1;
+   questionReviews.push({
+  id: String(q.id), // ensures it's always a string
+  subject: currentSubject,
+  question: q.text,
+  selected,
+  correctAnswer: answer ?? '',
+  explanation: q.explanation ?? null,
+  options: q.options?.map(opt => ({
+    label: opt.key,
+    text: opt.text,
+  })) ?? [],
+});
+
+
+
+    
+  });
+
+  correctCount = correct;
+
+  subjectBreakdown[currentSubject] = {
+    total: subjQuestions.length,
+    attempted,
+    correct,
   };
+
+  const percentage =
+    totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;
+
+  const totalTimeInSeconds = initialDurationInSeconds ?? 0;
+  const timeSpentInSeconds =
+    initialDurationInSeconds && timeLeft !== null
+      ? totalTimeInSeconds - timeLeft
+      : 0;
+
+  return {
+    examType: EXAM_TYPE,
+    totalQuestions,
+    correctCount,
+    percentage,
+    timeSpentInSeconds,
+    totalTimeInSeconds,
+    subjectBreakdown,
+    startTime,
+    endTime: Date.now(),
+    questionReviews,
+  };
+};
+
 
   /* ===== CALCULATOR HANDLER ===== */
   const handleCalcPress = (btn: string) => {
@@ -227,6 +311,29 @@ const currentPassage = passage;
       </Block>
     );
   }
+
+  const saveExamHistory = async (results: PerformanceResult) => {
+  try {
+    const user = firebaseAuth.currentUser;
+    if (!user) return;
+
+    const subjects = Object.keys(results.subjectBreakdown).join(', ');
+
+    await db.collection('examHistory').add({
+      userId: user.uid,
+      examType: results.examType,
+      subjects,
+      score: Math.round(results.percentage),
+      totalQuestions: results.totalQuestions,
+      correctCount: results.correctCount,
+      timeSpentInSeconds: results.timeSpentInSeconds,
+      createdAt: firestore.FieldValue.serverTimestamp(), 
+    });
+
+  } catch (error) {
+    console.log('Error saving exam history:', error);
+  }
+};
 
   /* ===== UI ===== */
   return (
@@ -283,13 +390,13 @@ const currentPassage = passage;
 )}
 
 {currentPassage && (
-  <Block style={{ marginBottom: RS(16) }}>
-    <Text size={14} style={{ fontWeight: '600', marginBottom: RS(4) }}>
-      Passage:
-    </Text>
-    <Text size={14}>{currentPassage}</Text>
+  <Block>
+    <Text>Passage:</Text>
+    <Text>{currentPassage}</Text>
   </Block>
 )}
+
+
 
 
         
@@ -299,19 +406,46 @@ const currentPassage = passage;
 
         <Text size={15} style={{ marginBottom: RS(16) }}> {currentQuestion.text} </Text>
 
-        {currentQuestion.options.map(opt => {
-          const selected = (selectedOptions[currentSubject] ?? [])[currentQuestionIndex] === opt.key;
-          return (
-            <TouchableOpacity key={opt.key} onPress={() => selectOption(opt.key)} style={{ flexDirection: 'row', alignItems: 'center', padding: RS(14), borderRadius: RS(12), borderWidth: 1, borderColor: selected ? palette.blue : '#ddd', marginBottom: RS(5), backgroundColor: '#fff' }} >
-              <Block style={{ width: RS(20), height: RS(20), borderRadius: RS(10), borderWidth: 2, borderColor: palette.blue, alignItems: 'center', justifyContent: 'center', marginRight: RS(12) }} >
-                {selected && <Block style={{ width: RS(10), height: RS(10), borderRadius: RS(5), backgroundColor: palette.blue }} />}
-              </Block>
+       {currentQuestion.options.map(opt => {
+  const selected = (selectedOptions[`${currentSubject}_${currentYear}`] ?? [])[currentQuestionIndex] === opt.key;
 
-              <Text size={14} style={{ marginRight: RS(8), fontWeight: '600' }}> {opt.key}. </Text>
-              <Text size={14} style={{ flex: 1 }}> {opt.text} </Text>
-            </TouchableOpacity>
-          );
-        })}
+  return (
+    <TouchableOpacity
+      key={opt.key}
+      onPress={() => selectOption(opt.key)}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: RS(14),
+        borderRadius: RS(12),
+        borderWidth: 1,
+        borderColor: selected ? palette.blue : '#ddd',
+        marginBottom: RS(5),
+        backgroundColor: '#fff'
+      }}
+    >
+      <Block
+        style={{
+          width: RS(20),
+          height: RS(20),
+          borderRadius: RS(10),
+          borderWidth: 2,
+          borderColor: palette.blue,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginRight: RS(12)
+        }}
+      >
+        {selected && (
+          <Block style={{ width: RS(10), height: RS(10), borderRadius: RS(5), backgroundColor: palette.blue }} />
+        )}
+      </Block>
+
+      <Text size={14} style={{ marginRight: RS(8), fontWeight: '600' }}> {opt.key}. </Text>
+      <Text size={14} style={{ flex: 1 }}> {opt.text} </Text>
+    </TouchableOpacity>
+  );
+})}
 
         {/* Question Numbers & Navigation */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: RS(32), marginBottom: RS(16) }} contentContainerStyle={{ paddingHorizontal: RS(4) }}>
@@ -348,7 +482,15 @@ const currentPassage = passage;
               <TouchableOpacity onPress={() => setShowSubmitPopup(false)} style={{ paddingHorizontal: RS(16), paddingVertical: RS(10), borderRadius: RS(20), backgroundColor: '#F2F2F2' }}>
                 <Text size={14} style={{ fontFamily: family.Medium }}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => { setShowSubmitPopup(false); const results = calculateResults(); navigation.navigate('PerformanceScreen', results); }} style={{ paddingHorizontal: RS(16), paddingVertical: RS(10), borderRadius: RS(20), backgroundColor: palette.blue }}>
+              <TouchableOpacity onPress={async () => { 
+  setShowSubmitPopup(false); 
+
+  const results = calculateResults();
+
+  await saveExamHistory(results);   
+
+  navigation.navigate('PerformanceScreen', results); 
+}}>
                 <Text size={14} style={{ fontFamily: family.Medium }} color="white">Confirm</Text>
               </TouchableOpacity>
             </Block>

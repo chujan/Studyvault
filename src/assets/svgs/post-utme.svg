@@ -1,3 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?><svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 73.27" style="enable-background:new 0 0 122.88 73.27" xml:space="preserve"><style type="text/css"><![CDATA[
-	.st0{fill-rule:evenodd;clip-rule:evenodd;}
-]]></style><g><path class="st0" d="M104.27,58.88l-0.54-19.99l-32.85,9.49c-2.96,0.65-5.88,0.96-8.74,0.97c-3.07,0.01-6.09-0.32-9.06-0.97 L21.7,38.79v20.27c0.9,10.53,31.11,13.75,40.38,14.19c7.43,0.36,36.78-3.52,40.64-9.57C103.55,62.36,104.07,60.76,104.27,58.88 L104.27,58.88z M117.58,24.5v24.43h0.77c0.53,0,0.96,0.43,0.96,0.96v6.57c0,0.52-0.43,0.96-0.96,0.96h-0.77v2.3 c0.98,0.18,1.73,1.05,1.73,2.08v0c0,1.16-0.96,2.12-2.12,2.12h-3.79c-1.16,0-2.12-0.95-2.12-2.12v0c0-1.03,0.75-1.9,1.73-2.08v-2.3 h-0.77c-0.52,0-0.96-0.43-0.96-0.96v-6.57c0-0.53,0.43-0.96,0.96-0.96h0.77v-23L73.03,38.35c-7.24,1.72-14.48,1.84-21.72,0 L7.18,25.18l-3.99-1.19c-4.97-2.03-3.73-6.8,0.9-7.9L54,1.19c5.15-1.47,10.29-1.7,15.44,0l49.01,14.72 c5.33,1.3,6.38,6.23,0.18,8.26L117.58,24.5L117.58,24.5z"/></g></svg>
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 -0.53 101.913 101.913" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <linearGradient id="linear-gradient" x1="-38.067" y1="0.253" x2="-37.752" y2="0.951" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#f9be00"/>
+      <stop offset="1" stop-color="#f8a72b"/>
+    </linearGradient>
+  </defs>
+  <g id="graduation" transform="translate(-440.981 -405.007)">
+    <path id="Path_47" data-name="Path 47" d="M522.287,430.907v45.521h-.037c-.385,6.441-13.792,11.616-30.313,11.616s-29.927-5.175-30.313-11.616h-.035V430.907Z" fill="#242c56"/>
+    <path id="Path_48" data-name="Path 48" d="M491.938,405.007l50.956,30.413-50.956,30.413L440.981,435.42Z" fill="#61688d"/>
+    <path id="Path_49" data-name="Path 49" d="M489.513,431.748a2.254,2.254,0,0,1,3.254-2.049l38.1,8.9a5.177,5.177,0,0,1,3.921,4.946v52.833H530.3V443.549a.663.663,0,0,0-.157-.341.7.7,0,0,0-.293-.227l-38.7-9.041.008-.037A2.256,2.256,0,0,1,489.513,431.748Z" fill="#242c56"/>
+    <path id="Path_50" data-name="Path 50" d="M527.484,496.907c0,4.948,2.3,8.958,5.13,8.958s5.128-4.01,5.128-8.958-2.3-8.956-5.128-8.956S527.484,491.962,527.484,496.907Z" fill="url(#linear-gradient)"/>
+  </g>
+</svg>

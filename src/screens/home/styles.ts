@@ -57,7 +57,7 @@ export const styles = StyleSheet.create({
 
   cardTitle: {
     fontSize: RS(18),
-    fontFamily: family.SemiBold,
+    fontFamily: family.Regular,
     color: palette.white,
   },
 

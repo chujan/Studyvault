@@ -75,6 +75,24 @@ export const styles = StyleSheet.create({
     marginLeft: -9,
   },
 
+  header: {
+    position: 'relative',
+    borderBottomWidth: 1,
+    borderBottomColor: palette.gray,
+  },
+
+  backButton: {
+    position: 'absolute',
+    left: RS(20),
+    padding: RS(8),
+  },
+
+  headerTitle: {
+    fontFamily: family.Bold,
+    fontSize: RS(16),
+    color: palette.black,
+  },
+
   menuText: {
     fontSize: 15,
     fontFamily: family.Medium,
@@ -89,5 +107,35 @@ export const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#F0F0F0',
     width: '100%',
+  },
+
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: palette.grayScale3,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  inputs: {
+    height: 50,
+  },
+  inputFlex: {
+    flex: 1,
+    height: 50,
+  },
+
+  saveButton: {
+    backgroundColor: palette.red,
+    borderRadius: 30,
+    paddingVertical: 18,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  saveButtonText: {
+    color: palette.white,
+    fontSize: 18,
+    fontFamily: family.SemiBold,
   },
 });

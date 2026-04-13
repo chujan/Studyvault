@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,12 +8,16 @@ import { Block, Text, SvgIcon } from '@components';
 import { styles } from './JambStyles';
 import { RS } from '@helpers';
 import { palette, family } from '@components/theme';
-import { fetchWaecQuestions  } from '../../services/jambApi';
+import { fetchWaecQuestions } from '../../services/jambApi';
 import { Question } from '../../services/question';
 import { getCache, setCache } from '../../storage/index';
+import firestore from '@react-native-firebase/firestore';
+import { db, firebaseAuth } from '../../config/firebase';
+
 
 /* ================= TYPES ================= */
 type PracticeMode = 'jamb' | 'timed' | 'unlimited';
+
 type QuestionReview = {
   subject: string;
   question: string;
@@ -21,6 +25,14 @@ type QuestionReview = {
   correctAnswer: string;
   options: { label: string; text: string }[];
 };
+
+type BookmarkedQuestion = {
+  examType: 'WAEC';
+  subject: string;
+  questionIndex: number;
+  question: Question;
+};
+
 type RootStackParamList = {
   WaecPracticeScreen: {
     subjects: string[];
@@ -31,7 +43,9 @@ type RootStackParamList = {
   };
   PerformanceScreen: PerformanceResult;
 };
+
 type PerformanceResult = {
+  examType: 'WAEC';
   totalQuestions: number;
   correctCount: number;
   percentage: number;
@@ -40,6 +54,7 @@ type PerformanceResult = {
   subjectBreakdown: { [subject: string]: { total: number; attempted: number; correct: number } };
   questionReviews: QuestionReview[];
 };
+
 type SubjectQuestions = Record<string, Question[]>;
 type SubjectAnswers = Record<string, (string | null)[]>;
 
@@ -52,6 +67,7 @@ export default function WaecPracticeScreen() {
   const subjects: string[] = routeParams.subjects ?? [];
   const practiceMode: PracticeMode = routeParams.practiceMode ?? 'jamb';
   const duration = routeParams.duration;
+  const EXAM_TYPE: 'WAEC' = 'WAEC';
 
   /* ===== TOP-LEVEL HOOKS ===== */
   const [startTime] = useState<number>(() => Date.now());
@@ -62,6 +78,8 @@ export default function WaecPracticeScreen() {
   const [loading, setLoading] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showSubmitPopup, setShowSubmitPopup] = useState(false);
+  const [bookmarks, setBookmarks] = useState<BookmarkedQuestion[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Calculator state
   const [showCalculator, setShowCalculator] = useState(false);
@@ -77,12 +95,24 @@ export default function WaecPracticeScreen() {
     }
   }, [subjects]);
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      const saved = await getCache<BookmarkedQuestion[]>('waec_bookmarks');
+      if (saved) setBookmarks(saved);
+      else setBookmarks([]);
+    });
+    return unsubscribe;
+  }, [navigation]);
+
   /* ===== FETCH / LOAD QUESTIONS ===== */
   const loadQuestions = async (subject: string) => {
     setLoading(true);
+    setError(null);
+
     try {
+      // Try cache first
       const cached = await getCache<Question[]>(`waec_questions_${subject}`);
-      if (cached) {
+      if (cached && cached.length > 0) {
         setAllQuestions(prev => ({ ...prev, [subject]: cached }));
         setQuestions(cached);
         setCurrentQuestionIndex(0);
@@ -92,7 +122,16 @@ export default function WaecPracticeScreen() {
         }));
         return;
       }
+
+      // Fetch from API
       const data = await fetchWaecQuestions(subject);
+
+      if (!data || data.length === 0) {
+        setError('No questions available for this subject.');
+        setQuestions([]);
+        return;
+      }
+
       setAllQuestions(prev => ({ ...prev, [subject]: data }));
       setQuestions(data);
       setCurrentQuestionIndex(0);
@@ -100,9 +139,23 @@ export default function WaecPracticeScreen() {
         ...prev,
         [subject]: Array(data.length).fill(null),
       }));
-      await setCache(`questions_${subject}`, data);
+
+      await setCache(`waec_questions_${subject}`, data);
     } catch (e) {
-      console.error(e);
+      // No internet fallback
+      const cached = await getCache<Question[]>(`waec_questions_${subject}`);
+      if (cached && cached.length > 0) {
+        setAllQuestions(prev => ({ ...prev, [subject]: cached }));
+        setQuestions(cached);
+        setCurrentQuestionIndex(0);
+        setSelectedOptions(prev => ({
+          ...prev,
+          [subject]: prev[subject] ?? Array(cached.length).fill(null),
+        }));
+      } else {
+        setError('No internet connection. Please check your network.');
+        setQuestions([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -142,11 +195,37 @@ export default function WaecPracticeScreen() {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
+  const toggleBookmark = async () => {
+    if (!currentQuestion) return;
+    const exists = bookmarks.find(
+      b => b.subject === currentSubject && b.questionIndex === currentQuestionIndex
+    );
+
+    let updated: BookmarkedQuestion[];
+    if (exists) {
+      updated = bookmarks.filter(
+        b => !(b.subject === currentSubject && b.questionIndex === currentQuestionIndex)
+      );
+      Alert.alert('Bookmark removed', 'This question has been removed from your bookmarks.', [{ text: 'OK' }]);
+    } else {
+      const newBookmark: BookmarkedQuestion = {
+        examType: 'WAEC',
+        subject: currentSubject,
+        questionIndex: currentQuestionIndex,
+        question: currentQuestion,
+      };
+      updated = [...bookmarks, newBookmark];
+      Alert.alert('Bookmarked successfully', 'You can find this question in your bookmarked questions.', [{ text: 'OK' }]);
+    }
+
+    setBookmarks(updated);
+    await setCache('waec_bookmarks', updated);
+  };
+
   const goPrev = () => setCurrentQuestionIndex(i => Math.max(i - 1, 0));
   const goNext = () => setCurrentQuestionIndex(i => Math.min(i + 1, questions.length - 1));
   const currentQuestion = questions[currentQuestionIndex];
 
-  /* ===== CALCULATE RESULTS ===== */
   const calculateResults = (): PerformanceResult & { startTime: number; endTime: number } => {
     let totalQuestions = 0;
     let correctCount = 0;
@@ -165,7 +244,6 @@ export default function WaecPracticeScreen() {
         const answer = q.answer?.toString().trim();
         if (selected !== null) attempted += 1;
         if (selected && selected === answer) correct += 1;
-
         const options = q.options?.map(opt => ({ label: opt.key, text: opt.text })) ?? [];
         questionReviews.push({ subject, question: q.text, selected, correctAnswer: answer ?? '', options });
       });
@@ -178,23 +256,49 @@ export default function WaecPracticeScreen() {
     const totalTimeInSeconds = initialDurationInSeconds ?? 0;
     const timeSpentInSeconds = initialDurationInSeconds && timeLeft !== null ? totalTimeInSeconds - timeLeft : 0;
 
-    return { totalQuestions, correctCount, percentage, timeSpentInSeconds, totalTimeInSeconds, subjectBreakdown, startTime, endTime: Date.now(), questionReviews };
+    return { examType: EXAM_TYPE, totalQuestions, correctCount, percentage, timeSpentInSeconds, totalTimeInSeconds, subjectBreakdown, startTime, endTime: Date.now(), questionReviews };
   };
 
-  /* ===== CALCULATOR HANDLER ===== */
   const handleCalcPress = (btn: string) => {
     if (btn === 'C') setCalcInput('');
     else if (btn === '=') {
       try {
         const result = eval(calcInput);
         setCalcInput(result.toString());
-      } catch (e) {
+      } catch {
         setCalcInput('Error');
       }
     } else setCalcInput(prev => prev + btn);
   };
 
-  /* ===== LOADING / EMPTY STATES ===== */
+
+  const saveExamHistory = async (results: PerformanceResult) => {
+  try {
+    const user = firebaseAuth.currentUser;
+    if (!user) return;
+
+    const subjects = Object.keys(results.subjectBreakdown).join(', ');
+
+    await db.collection('examHistory').add({
+      userId: user.uid,
+      examType: results.examType,
+      subjects,
+      score: Math.round(results.percentage),
+      totalQuestions: results.totalQuestions,
+      correctCount: results.correctCount,
+      timeSpentInSeconds: results.timeSpentInSeconds,
+      createdAt: firestore.FieldValue.serverTimestamp(), 
+    });
+
+  } catch (error) {
+    console.log('Error saving exam history:', error);
+  }
+};
+
+
+
+
+  /* ===== LOADING / ERROR / EMPTY QUEUE ===== */
   if (loading) {
     return (
       <Block flex={1} align="center" justify="center">
@@ -204,10 +308,28 @@ export default function WaecPracticeScreen() {
     );
   }
 
-  if (!currentQuestion) {
+  if (error) {
+    return (
+      <Block
+  flex={1}
+  align="center"
+  justify="center"
+  style={{ padding: RS(20) }}
+>
+        <Text size={15} style={{ textAlign: 'center', marginBottom: RS(12) }}>
+          {error}
+        </Text>
+        <TouchableOpacity onPress={() => loadQuestions(currentSubject)}>
+          <Text color={palette.blue}>Retry</Text>
+        </TouchableOpacity>
+      </Block>
+    );
+  }
+
+  if (!loading && questions.length === 0) {
     return (
       <Block flex={1} align="center" justify="center">
-        <Text>No questions found</Text>
+        <Text>No questions available</Text>
       </Block>
     );
   }
@@ -216,18 +338,24 @@ export default function WaecPracticeScreen() {
   return (
     <Block flex={1}>
       {/* HEADER */}
-      <Block style={[styles.header, { marginTop: insets.top }]} paddingHorizontal={RS(20)} paddingVertical={RS(16)} >
+      <Block style={[styles.header, { marginTop: insets.top }]} paddingHorizontal={RS(20)} paddingVertical={RS(16)}>
         <Block row justify="space-between" align="center">
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <SvgIcon name="arrow-left" size={15} />
           </TouchableOpacity>
-
-          <Text style={styles.headerTitle}> {currentSubject.toUpperCase()} CBT </Text>
-
-          {/* Calendar triggers calculator */}
-          <TouchableOpacity onPress={() => setShowCalculator(true)}>
-            <SvgIcon name="calender" size={16} />
-          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{currentSubject.toUpperCase()} CBT</Text>
+          <Block row align="center">
+            <TouchableOpacity onPress={toggleBookmark} style={{ marginRight: RS(15) }}>
+              <SvgIcon
+                name="book-marks"
+                size={20}
+                color={bookmarks.some(b => b.subject === currentSubject && b.questionIndex === currentQuestionIndex) ? palette.blue : '#999'}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowCalculator(true)}>
+              <SvgIcon name="calender" size={20} />
+            </TouchableOpacity>
+          </Block>
         </Block>
 
         <Block row justify="space-between" align="center" style={{ marginTop: RS(24) }}>
@@ -236,23 +364,46 @@ export default function WaecPracticeScreen() {
           </Text>
 
           <Block row align="center">
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: RS(16), paddingVertical: RS(8), borderRadius: RS(20), borderWidth: 1, borderColor: palette.cardBorder, backgroundColor: '#FFF' , marginRight: RS(17),}}>
-              <Text size={14} style={{ fontFamily: family.Medium }} color={palette.blue}> Quit </Text>
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: RS(16),
+                paddingVertical: RS(8),
+                borderRadius: RS(20),
+                borderWidth: 1,
+                borderColor: palette.cardBorder,
+                backgroundColor: '#FFF',
+                marginRight: RS(17),
+              }}
+            >
+              <Text size={14} style={{ fontFamily: family.Medium }} color={palette.blue}>
+                Quit
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setShowSubmitPopup(true)} style={{ backgroundColor: palette.blue, paddingHorizontal: RS(16), paddingVertical: RS(8), borderRadius: RS(20) }}>
+            <TouchableOpacity
+              onPress={() => setShowSubmitPopup(true)}
+              style={{ backgroundColor: palette.blue, paddingHorizontal: RS(16), paddingVertical: RS(8), borderRadius: RS(20) }}
+            >
               <Text color="white">Submit</Text>
             </TouchableOpacity>
           </Block>
         </Block>
 
         {/* SUBJECTS QUEUE */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: RS(16) }} contentContainerStyle={{ paddingHorizontal: RS(4) }} >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: RS(16) }} contentContainerStyle={{ paddingHorizontal: RS(4) }}>
           {subjects.map((subj, i) => {
             const isActive = subj === currentSubject;
             return (
-              <TouchableOpacity key={i} onPress={() => setCurrentSubject(subj)} style={{ paddingHorizontal: RS(12), paddingVertical: RS(6), backgroundColor: isActive ? palette.blue : '', borderRadius: RS(16), marginRight: RS(8) }} >
-                <Text size={14} color={isActive ? 'white' : 'black'}> {subj} </Text>
+              <TouchableOpacity
+                key={i}
+                onPress={() => setCurrentSubject(subj)}
+                style={{ paddingHorizontal: RS(12), paddingVertical: RS(6), backgroundColor: isActive ? palette.blue : '', borderRadius: RS(16), marginRight: RS(8) }}
+              >
+                <Text size={14} color={isActive ? 'white' : 'black'}>
+                  {subj}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -262,21 +413,53 @@ export default function WaecPracticeScreen() {
       {/* QUESTIONS & OPTIONS */}
       <ScrollView style={{ padding: RS(20) }}>
         <Block style={{ alignSelf: 'flex-start', paddingHorizontal: RS(12), paddingVertical: RS(6), borderRadius: RS(20), backgroundColor: '#E0E0E0', marginBottom: RS(12) }}>
-          <Text size={14} style={{ marginBottom: RS(4) }}> Question {currentQuestionIndex + 1} </Text>
+          <Text size={14} style={{ marginBottom: RS(4) }}>
+            Question {currentQuestionIndex + 1}
+          </Text>
         </Block>
 
-        <Text size={15} style={{ marginBottom: RS(16) }}> {currentQuestion.text} </Text>
+        <Text size={15} style={{ marginBottom: RS(16) }}>
+          {currentQuestion.text}
+        </Text>
 
         {currentQuestion.options.map(opt => {
           const selected = (selectedOptions[currentSubject] ?? [])[currentQuestionIndex] === opt.key;
           return (
-            <TouchableOpacity key={opt.key} onPress={() => selectOption(opt.key)} style={{ flexDirection: 'row', alignItems: 'center', padding: RS(14), borderRadius: RS(12), borderWidth: 1, borderColor: selected ? palette.blue : '#ddd', marginBottom: RS(5), backgroundColor: '#fff' }} >
-              <Block style={{ width: RS(20), height: RS(20), borderRadius: RS(10), borderWidth: 2, borderColor: palette.blue, alignItems: 'center', justifyContent: 'center', marginRight: RS(12) }} >
+            <TouchableOpacity
+              key={opt.key}
+              onPress={() => selectOption(opt.key)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: RS(14),
+                borderRadius: RS(12),
+                borderWidth: 1,
+                borderColor: selected ? palette.blue : '#ddd',
+                marginBottom: RS(5),
+                backgroundColor: '#fff',
+              }}
+            >
+              <Block
+                style={{
+                  width: RS(20),
+                  height: RS(20),
+                  borderRadius: RS(10),
+                  borderWidth: 2,
+                  borderColor: palette.blue,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: RS(12),
+                }}
+              >
                 {selected && <Block style={{ width: RS(10), height: RS(10), borderRadius: RS(5), backgroundColor: palette.blue }} />}
               </Block>
 
-              <Text size={14} style={{ marginRight: RS(8), fontWeight: '600' }}> {opt.key}. </Text>
-              <Text size={14} style={{ flex: 1 }}> {opt.text} </Text>
+              <Text size={14} style={{ marginRight: RS(8), fontWeight: '600' }}>
+                {opt.key}.
+              </Text>
+              <Text size={14} style={{ flex: 1 }}>
+                {opt.text}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -286,8 +469,24 @@ export default function WaecPracticeScreen() {
           {questions.map((_, i) => {
             const isActive = i === currentQuestionIndex;
             return (
-              <TouchableOpacity key={i} onPress={() => setCurrentQuestionIndex(i)} style={{ width: RS(38), height: RS(38), borderRadius: RS(19), alignItems: 'center', justifyContent: 'center', marginRight: RS(10), backgroundColor: isActive ? palette.blue : '#F2F2F2', borderWidth: 1, borderColor: isActive ? palette.blue : '#E0E0E0' }} >
-                <Text size={13} color={isActive ? 'white' : 'black'}> {i + 1} </Text>
+              <TouchableOpacity
+                key={i}
+                onPress={() => setCurrentQuestionIndex(i)}
+                style={{
+                  width: RS(38),
+                  height: RS(38),
+                  borderRadius: RS(19),
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: RS(10),
+                  backgroundColor: isActive ? palette.blue : '#F2F2F2',
+                  borderWidth: 1,
+                  borderColor: isActive ? palette.blue : '#E0E0E0',
+                }}
+              >
+                <Text size={13} color={isActive ? 'white' : 'black'}>
+                  {i + 1}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -296,28 +495,41 @@ export default function WaecPracticeScreen() {
         <Block row align="center" justify="space-between" style={{ marginTop: RS(32) }}>
           <TouchableOpacity onPress={goPrev} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: RS(16), paddingVertical: RS(8), borderRadius: RS(20), backgroundColor: palette.blue }}>
             <SvgIcon name="arrow-right" width={24} height={28} color="white" style={{ transform: [{ rotate: '180deg' }], marginRight: RS(8) }} />
-            <Text size={14} style={{ fontFamily: family.Medium }} color="white">Previous</Text>
+            <Text size={14} style={{ fontFamily: family.Medium }} color="white">
+              Previous
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={goNext} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: RS(16), paddingVertical: RS(8), borderRadius: RS(20), borderWidth: 1, borderColor: palette.cardBorder, backgroundColor: '#FFF' }}>
-            <Text size={14} style={{ fontFamily: family.Medium }} color="gray">Next</Text>
-            <SvgIcon name="arrow-right" width={24} height={28} color="gray" style={{ marginLeft: RS(8) }} />
-          </TouchableOpacity>
+                     <Text size={14} style={{ fontFamily: family.Medium }} color="gray">Next</Text>
+                     <SvgIcon name="arrow-right" width={24} height={28} color="gray" style={{ marginLeft: RS(8) }} />
+                   </TouchableOpacity>
         </Block>
       </ScrollView>
 
       {/* SUBMIT POPUP */}
       {showSubmitPopup && (
-        <Block style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' }}>
-          <Block style={{ width: '85%', backgroundColor: '#FFF', borderRadius: RS(16), padding: RS(20) }}>
-            <Text size={16} style={{ fontFamily: family.Medium, marginBottom: RS(12) }}>Submit Test?</Text>
-            <Text size={1} style={{ fontFamily: family.Medium, marginBottom: RS(12) }}>Are you sure you want to submit test?</Text>
+        <Block style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
+          <Block style={{ width: '80%', padding: RS(20), borderRadius: RS(12), backgroundColor: 'white' }}>
+            <Text size={16} style={{ fontWeight: '700', marginBottom: RS(12) }}>
+              Are you sure you want to submit?
+            </Text>
             <Block row justify="space-between">
-              <TouchableOpacity onPress={() => setShowSubmitPopup(false)} style={{ paddingHorizontal: RS(16), paddingVertical: RS(10), borderRadius: RS(20), backgroundColor: '#F2F2F2' }}>
-                <Text size={14} style={{ fontFamily: family.Medium }}>Cancel</Text>
+              <TouchableOpacity
+                onPress={() => setShowSubmitPopup(false)}
+                style={{ paddingVertical: RS(10), paddingHorizontal: RS(20), borderRadius: RS(8), borderWidth: 1, borderColor: '#ccc' }}
+              >
+                <Text>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => { setShowSubmitPopup(false); const results = calculateResults(); navigation.navigate('PerformanceScreen', results); }} style={{ paddingHorizontal: RS(16), paddingVertical: RS(10), borderRadius: RS(20), backgroundColor: palette.blue }}>
-                <Text size={14} style={{ fontFamily: family.Medium }} color="white">Confirm</Text>
+              <TouchableOpacity
+                onPress={async () => {
+  const results = calculateResults();
+  await saveExamHistory(results);
+  navigation.replace('PerformanceScreen', results);
+}}
+                style={{ paddingVertical: RS(10), paddingHorizontal: RS(20), borderRadius: RS(8), backgroundColor: palette.blue }}
+              >
+                <Text color="white">Submit</Text>
               </TouchableOpacity>
             </Block>
           </Block>
@@ -326,33 +538,23 @@ export default function WaecPracticeScreen() {
 
       {/* CALCULATOR MODAL */}
       {showCalculator && (
-        <Block style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
-          <Block style={{ width: '90%', backgroundColor: '#fff', borderRadius: RS(16), padding: RS(20) }}>
-            <Text size={18} style={{ marginBottom: RS(12) }}>Calculator</Text>
-
-            {/* Display */}
-            <Block style={{ height: RS(50), borderWidth: 1, borderColor: '#ddd', borderRadius: RS(8), justifyContent: 'center', paddingHorizontal: RS(12), marginBottom: RS(16) }}>
-              <Text size={16}>{calcInput || '0'}</Text>
-            </Block>
-
-            {/* Buttons */}
-            <Block row wrap="wrap" justify="space-between">
-              {['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+','C'].map(btn => (
-                <TouchableOpacity
-                  key={btn}
-                  onPress={() => handleCalcPress(btn)}
-                  style={{ width: '22%', height: RS(50), marginBottom: RS(12), backgroundColor: '#f2f2f2', alignItems: 'center', justifyContent: 'center', borderRadius: RS(8) }}
-                >
-                  <Text size={16}>{btn}</Text>
-                </TouchableOpacity>
-              ))}
-            </Block>
-
-            {/* Close Button */}
-            <TouchableOpacity onPress={() => setShowCalculator(false)} style={{ marginTop: RS(12), alignSelf: 'center', paddingHorizontal: RS(16), paddingVertical: RS(8), backgroundColor: palette.blue, borderRadius: RS(12) }}>
-              <Text color="white">Close</Text>
-            </TouchableOpacity>
+        <Block style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#fff', padding: RS(20), borderTopLeftRadius: RS(16), borderTopRightRadius: RS(16) }}>
+          <Text size={20} style={{ marginBottom: RS(12) }}>
+            Calculator
+          </Text>
+          <Text size={18} style={{ marginBottom: RS(12), height: RS(36) }}>
+            {calcInput}
+          </Text>
+          <Block row wrap="wrap">
+            {['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+','C'].map(btn => (
+              <TouchableOpacity key={btn} onPress={() => handleCalcPress(btn)} style={{ width: RS(60), height: RS(60), margin: RS(4), borderRadius: RS(12), backgroundColor: '#eee', alignItems: 'center', justifyContent: 'center' }}>
+                <Text size={18}>{btn}</Text>
+              </TouchableOpacity>
+            ))}
           </Block>
+          <TouchableOpacity onPress={() => setShowCalculator(false)} style={{ marginTop: RS(12), alignSelf: 'center' }}>
+            <Text color={palette.blue}>Close</Text>
+          </TouchableOpacity>
         </Block>
       )}
     </Block>

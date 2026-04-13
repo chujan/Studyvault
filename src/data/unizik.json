@@ -1,0 +1,189 @@
+[
+  {
+    "year": "2006/2007",
+    "institution": "UNIZIK",
+    "sections": [
+      {
+        "instruction": "Choose the option that best conveys the meaning of the underlined word or expression.",
+        "name": "English",
+        "questions": [
+          {
+            "number": 1,
+            "question": "In the match against the Rangers team, the Enyimba boys turned out to be the dark horse.",
+            "options": {
+              "A": "played most brilliantly",
+              "B": "played their usual form",
+              "C": "won unexpectedly",
+              "D": "lost as expected",
+              "E": "won as expected"
+            },
+            "answer": "C",
+            "explanation": "A dark horse is someone who succeeds unexpectedly."
+          },
+          {
+            "number": 2,
+            "question": "He spoke with his heart in his mouth.",
+            "options": {
+              "A": "courageously",
+              "B": "with unusual cowardice",
+              "C": "with confusion",
+              "D": "without making up his mind",
+              "E": "with fright and agitation"
+            },
+            "answer": "E",
+            "explanation": "The expression means speaking in fear or anxiety."
+          },
+          {
+            "number": 3,
+            "question": "The leader in today's issue of Punch Newspaper focuses on inflation.",
+            "options": {
+              "A": "president",
+              "B": "headline",
+              "C": "editorial",
+              "D": "columnist",
+              "E": "proprietor"
+            },
+            "answer": "C",
+            "explanation": "A newspaper leader refers to the editorial."
+          },
+          {
+            "number": 4,
+            "question": "All his plans fell through.",
+            "options": {
+              "A": "failed",
+              "B": "were accomplished",
+              "C": "were reviewed",
+              "D": "were rejected",
+              "E": "fell"
+            },
+            "answer": "A",
+            "explanation": "To fall through means to fail."
+          },
+          {
+            "number": 5,
+            "question": "He stared at her.",
+            "options": {
+              "A": "glanced",
+              "B": "looked",
+              "C": "peeped",
+              "D": "gazed",
+              "E": "blinked"
+            },
+            "answer": "D",
+            "explanation": "To stare means to gaze fixedly."
+          },
+          {
+            "number": 6,
+            "question": "As he was a gullible leader, his followers took advantage of him.",
+            "options": {
+              "A": "He was wicked",
+              "B": "He was proud",
+              "C": "He was easily deceived",
+              "D": "He was cruel",
+              "E": "He was stubborn"
+            },
+            "answer": "C",
+            "explanation": "Gullible means easily deceived."
+          },
+          {
+            "number": 7,
+            "question": "His summary of the lecture was brief and to the point.",
+            "options": {
+              "A": "careful",
+              "B": "precise",
+              "C": "accurate",
+              "D": "exact",
+              "E": "crucial"
+            },
+            "answer": "B",
+            "explanation": "Brief and to the point means precise."
+          },
+          {
+            "number": 8,
+            "question": "Do you have the same aversion as I do for home videos?",
+            "options": {
+              "A": "bitterness",
+              "B": "dislike",
+              "C": "criticism",
+              "D": "indignation",
+              "E": "reference"
+            },
+            "answer": "B",
+            "explanation": "Aversion means strong dislike."
+          },
+          {
+            "number": 9,
+            "question": "I did not think she could be so easily taken in by his pretences.",
+            "options": {
+              "A": "flattered",
+              "B": "deceived",
+              "C": "pregnated",
+              "D": "overcome",
+              "E": "blackmailed"
+            },
+            "answer": "B",
+            "explanation": "To be taken in means to be deceived."
+          },
+          {
+            "number": 10,
+            "question": "The witness was guilty of swearing to a statement he knew to be false.",
+            "options": {
+              "A": "forgery",
+              "B": "perjury",
+              "C": "libel",
+              "D": "slander",
+              "E": "affidavit"
+            },
+            "answer": "B",
+            "explanation": "Swearing falsely under oath is perjury."
+          }
+        ]
+      },
+      {
+        "instruction": "Choose the option that best completes each sentence.",
+        "name": "General Paper",
+        "questions": [
+          {
+            "number": 21,
+            "question": "When the beggar was tired, he ____ down by the roadside.",
+            "options": {
+              "A": "lied",
+              "B": "laid",
+              "C": "layed",
+              "D": "lay",
+              "E": "lain"
+            },
+            "answer": "D",
+            "explanation": "The correct past tense of lie is lay."
+          },
+          {
+            "number": 22,
+            "question": "He did not like ____ leaving the class early.",
+            "options": {
+              "A": "we",
+              "B": "us",
+              "C": "our",
+              "D": "ourselves",
+              "E": "them"
+            },
+            "answer": "C",
+            "explanation": "A possessive adjective is required."
+          },
+          {
+            "number": 23,
+            "question": "Before the operation, the dentist found that his patient's teeth ____.",
+            "options": {
+              "A": "have long decayed",
+              "B": "have long been decayed",
+              "C": "have long being decayed",
+              "D": "had long decayed",
+              "E": "had been decayed"
+            },
+            "answer": "D",
+            "explanation": "Past perfect tense fits the context."
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -65,12 +65,21 @@ export default function ViewPerformanceScreen() {
   const route = useRoute<RoutePropType>();
   const explanationsJson = rawExplanations as Record<number, string>;
 
+  // const initialQuestions: QuestionReviewWithUI[] =
+  //   (route.params?.questionReviews ?? []).map(q => ({
+  //     ...q,
+  //     showExplanation: false,
+  //     explanation: explanationsJson[q.id] ?? "No explanation available."
+  //   }));
   const initialQuestions: QuestionReviewWithUI[] =
-    (route.params?.questionReviews ?? []).map(q => ({
-      ...q,
-      showExplanation: false,
-      explanation: explanationsJson[q.id] ?? "No explanation available."
-    }));
+  (route.params?.questionReviews ?? []).map(q => ({
+    ...q,
+    showExplanation: false,
+    explanation: (q as any).explanation ?? explanationsJson[q.id] ?? "No explanation available."
+  }));
+
+
+
 
   const [questionData, setQuestionData] = useState<QuestionReviewWithUI[]>(initialQuestions);
 

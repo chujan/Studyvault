@@ -163,6 +163,15 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  bookMarkBtn: {
+  marginTop: RS(18),
+  backgroundColor: palette.blue,
+  paddingVertical: RS(12),
+  paddingHorizontal: RS(20), // add some horizontal padding
+  borderRadius: RS(24),
+  alignSelf: 'flex-start', // move the button itself to the left
+},
+
   explainText: {
     color: '#FFF',
     fontSize: RS(14),

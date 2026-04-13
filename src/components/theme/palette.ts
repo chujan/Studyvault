@@ -95,6 +95,7 @@ export const palette = {
   borderBottomColor: '#EEEEEE',
   charcoal: '#181818',
   red: '#FF4B55',
+  brown: '#E0E0E0',
   borderColor: '#F5F5F5',
   regularText: '#1C274C',
   grayScale: '#5C5464',

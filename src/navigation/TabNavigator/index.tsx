@@ -2,7 +2,8 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../../screens/home';
 import ProfileScreen from '../../screens/profile';
-import ProgressScreen from '../../screens/progress';
+import StudyScreen from '../../screens/study';
+
 import ChatsScreen from '../../screens/chats';
 import { SvgIcon } from '../../components/svg-icon';
 
@@ -23,8 +24,8 @@ export default function TabNavigator() {
           } else if (route.name === 'Profile') {
             iconName = 'Person';
             isFilled = true;   // filled icon
-          } else if (route.name === 'MyProgress') {
-            iconName = 'Activity';
+          } else if (route.name === 'Study') {
+            iconName = 'notes';
             isFilled = false;  // outline icon
           } else if (route.name === 'Chats') {
             iconName = 'Chats';
@@ -45,7 +46,7 @@ export default function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="MyProgress" component={ProgressScreen} />
+      <Tab.Screen name="Study" component={StudyScreen} />
       <Tab.Screen name="Chats" component={ChatsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

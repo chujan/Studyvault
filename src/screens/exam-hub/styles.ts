@@ -61,6 +61,13 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+   quickText: {
+    fontSize: RS(14),
+    fontFamily: family.Medium,
+    //color: palette.black,
+    textAlign: 'center',
+  },
+
   sectionHeader: {
     flexDirection: 'row',
     paddingHorizontal: RS(29),
@@ -143,6 +150,6 @@ export const styles = StyleSheet.create({
   newsMeta: {
     fontSize: RS(11),
     fontFamily: family.Regular,
-    color: palette.gray,
+    color: palette.grey2,
   },
 });

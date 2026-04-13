@@ -12,7 +12,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RS } from '@helpers';
 import { palette } from '@theme';
 import { styles } from './JambStyles';
-import { ChessPieces } from '@images/home';
+import { ChessPieces } from '@assets/images';
 import { Block, Text, SvgIcon } from '@components';
 import { BottomSheet, BottomSheetModalRefProps } from '@components/bottom-sheet';
 
