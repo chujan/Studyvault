@@ -56,7 +56,7 @@ export default function HomeScreen() {
   const handleMenuPress = (id: number) => {
     switch (id) {
       case 1: navigation.navigate('ExamHub' as never); break;
-      case 2: navigation.navigate('SkillsStudio' as never); break;
+      case 2: navigation.navigate('SkillsStudioScreen' as never); break;
       case 3: navigation.navigate('BrainGames' as never); break;
       case 4: navigation.navigate('More' as never); break;
     }

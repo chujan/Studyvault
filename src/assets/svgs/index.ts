@@ -67,6 +67,20 @@ export {default as MoreHorizontal} from './more-horizontal.svg';
 export {default as Image} from './image.svg';
 export {default as MessageCircle} from './message-circle.svg';
 export {default as BookMarked} from './book-marked.svg';
+export {default as Filter} from './filter.svg';
+export {default as Science} from './science.svg';
+export {default as English} from './english.svg';
+export {default as Art} from './art.svg';
+export {default as Business} from './business.svg';
+export {default as Coding} from './coding.svg';
+export {default as Marketing} from './marketing.svg';
+export {default as Accounting} from './accounting.svg';
+export {default as Maths} from './maths.svg';
+export {default as Finance} from './finance.svg';
+export {default as Ai} from './ai.svg';
+export {default as Health} from './health.svg';
+export {default as Music} from './music.svg';
+export {default as Play} from './play.svg';
 
 
 

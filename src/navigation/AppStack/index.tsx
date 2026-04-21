@@ -45,6 +45,10 @@ import WebViewScreen from '@screens/exam-hub/WebViewScreen';
 import DiscussionScreen from '@screens/exam-hub/DiscussionScreen';
 import EventDetailScreen from '@screens/exam-hub/EventDetailScreen';
 import SetReminderScreen from '@screens/exam-hub/SetReminderScreen';
+import SkillsStudioScreen from '@screens/skill-studio/SkillsStudioScreen';
+import SkillCategoryScreen from '@screens/skill-studio/SkillCategoryScreen';
+import  VideoDetailScreen from '@screens/skill-studio/VideoDetailScreen';
+import CategoryListScreen from '@screens/skill-studio/CategoryListScreen';
 import LeaderBoardScreen from '@screens/exam-hub/LeaderBoardScreen';
 import ViewHistoryScreen from '@screens/exam-hub/ViewHistoryScreen';
 import ReminderScreen from '../../screens/profile/ReminderScreen';
@@ -106,6 +110,11 @@ export type AppStackParamList = {
   DiscussionScreen:undefined;
   LeaderBoardScreen:undefined;
   ViewHistoryScreen:undefined;
+  SkillsStudioScreen:undefined;
+  SkillCategoryScreen:undefined;
+  CategoryListScreen:undefined;
+  VideoDetailScreen:undefined;
+  
 };
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -165,6 +174,10 @@ export default function AppStack() {
           <Stack.Screen name="DiscussionScreen" component={DiscussionScreen} />
           <Stack.Screen name="ViewHistoryScreen" component={ViewHistoryScreen} />
           <Stack.Screen name="LeaderBoardScreen" component={LeaderBoardScreen} />
+          <Stack.Screen name="SkillsStudioScreen" component={SkillsStudioScreen} />
+          <Stack.Screen name="SkillCategoryScreen" component={SkillCategoryScreen} />
+          <Stack.Screen name="CategoryListScreen" component={ CategoryListScreen} />
+          <Stack.Screen name="VideoDetailScreen" component={VideoDetailScreen} />
            
     </Stack.Navigator>
   );
